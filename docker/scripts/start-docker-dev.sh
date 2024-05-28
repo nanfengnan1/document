@@ -206,7 +206,6 @@ function start_containter()
 	systemctl daemon-reload
 	
 	if [ -z "${DOCKER_IMAGE}" ] || [ -z "${USE_CPU}" ]; then
-		echo_message -r "${USE_CPU}, ${DOCKER_IMAGE}"
 		echo_message -r "boot docker lack of image name or cpu_set"
 		exit -1
 	fi
