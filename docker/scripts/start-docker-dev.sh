@@ -123,7 +123,6 @@ function config_image_name()
 	fi
 	
 	e_image_tag=$(docker images | grep "${image_name}" | awk '{print $2}')
-	echo_message "$e_image_tag, ${DOCKER_IMAGE#*:}"
 	if [[ ! "${e_image_tag}" = "${image_tag#*:}" ]]; then
 		echo_message -r "image version is error"
 		exit -1
@@ -228,7 +227,7 @@ function main()
 {
 
 	# 使用getopt解析参数
-	ARGS=$(getopt -o h::c::,p::,w::,l::,i:: -l "help::, cpu_set::, projec_path, work_path::, image_name::, docker_name::, --list_cpu, --info::" --name "$0" -- "$@")
+	ARGS=$(getopt -o h::c::,p::,w::,l::,i:: -l "help::, cpu_set::, project_path::, work_path::, image_name::, docker_name::, --list_cpu, --info::" --name "$0" -- "$@")
 
 	# 处理参数解析后的结果
 	eval set -- "$ARGS"
