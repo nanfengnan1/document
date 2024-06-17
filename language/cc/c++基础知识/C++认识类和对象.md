@@ -1,6 +1,5 @@
 ---
-typora-copy-images-to: ./image
-typora-root-url: ./image
+
 ---
 
 ## C++之面向对象(Object oriented Programming,OOP)
@@ -119,7 +118,7 @@ friendly:
 
 文件目录如下
 
-![image-20240617145205073](./image-20240617145205073-1718607348510-1.png)
+![image-20240617145205073](./image/image-20240617145205073-1718607348510-1.png)
 
 文件内容如下
 
@@ -187,7 +186,7 @@ int main(int argc, char *argv[])
 
 ### 10. 制作动态库和静态库
 
-![image-20240617145205073](./image-20240617145205073-1718607348510-1.png)
+![image-20240617145205073](./image/image-20240617145205073-1718607348510-1.png)
 
 #### 10.1 制作动态库
 
