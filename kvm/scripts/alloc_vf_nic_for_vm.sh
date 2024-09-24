@@ -56,7 +56,7 @@ function check_sriov_envirment()
   fi
 
   # check grup configuration parameter
-  GRUP_SUPP_IOMMU=$(grep "iommu" /etc/grub2.cfg | sed -n 's/.*iommu=\(.*=\)\?.*/\1/p' | awk '{print $1}' | head -n 2)
+  GRUP_SUPP_IOMMU=$(grep "iommu" /etc/grub2.cfg | sed -n 's/.*iommu=\(.*\)"/\1/p')
   if [ ${#GRUP_SUPP_IOMMU} == 0 ]; then
     echo -e "\033[31mplease check grub support amd_iommu or intel_iommu \033[0m"
     exit -1
