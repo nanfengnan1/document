@@ -1,0 +1,8 @@
+# python-api deps
+ipaddress==1.0.23
+scapy==2.6.1
+vpp-papi==2.3.0
+
+# doc deps
+ply==3.11
+pyparsing==3.2.0
