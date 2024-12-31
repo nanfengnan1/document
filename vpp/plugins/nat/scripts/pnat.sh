@@ -27,7 +27,7 @@ vppctl set interface state host-host2 up
 vppctl set interface ip address host-host2 10.1.0.2/24
 #vppctl ip route add 10.0.0.1/32 via host-host1
 
-#ip netns exec host2 ip route add 10.1.0.1/32 via 10.1.0.2
+#ip netns exec host2 ip route add 10.0.0.1/32 via 10.1.0.2
 
 # out: in after lookup 
 # in:  in before lookup
