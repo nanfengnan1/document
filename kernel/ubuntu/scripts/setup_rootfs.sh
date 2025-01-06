@@ -1,25 +1,48 @@
 #!/bin/bash
 
-wget https://cdimage.ubuntu.com/ubuntu-base/releases/22.04/release/ubuntu-base-22.04-base-amd64.tar.gz
-mkdir rootfs
-tar -xvf ubuntu-base-22.04-base-amd64.tar.gz -C rootfs
+OS_ID        = $(grep '^ID=' /etc/os-release | cut -f2- -d= | sed -e 's/\"//g')
+OS_VERSION_ID= $(grep '^VERSION_ID=' /etc/os-release | cut -f2- -d= | sed -e 's/\"//g')
+OS_ARCH=(uname -m)
+
+if [ ${OS_ID} != "ubuntu" ]; then
+	 echo "${OS_ID}-${OS_VERSION_ID} didn't support"
+	 exit -1
+fi
+
+if [ ${OS_ARCH} == "x86_64" ]; then
+	OS_ARCH="amd64"
+elif [ ${OS_ARCH} == "aarch64" ]; then
+	OS_ARCH="arm64"
+elif [ ${OS_ARCH} == "riscv64" ]; then
+else
+	echo "${OS_ID}-${OS_VERSION_ID} arch ${OS_ARCH} didn't support"
+	exit -1
+fi
+BASE_IMAGE=ubuntu-base-${OS_VERSION_ID}-base-${OS_ARCH}
+BASED_IMAGE_PKG=${BASE_IMAGE}.tar.gz
+
+echo " ************************ os-release: ${OS_ID}-${OS_VERSION_ID} ************************ "
+echo " ************************ arch:       ${OS_ARCH} *************************************** "
+
+wget https://cdimage.ubuntu.com/ubuntu-base/releases/${OS_VERSION_ID}/release/${BASED_IMAGE_PKG}
 
 qemu-img create -f raw ubuntu.img 20G
 mkfs.ext4 ubuntu.img
 mkdir rootfs
 
 # use chroot to install software for rootfs
-mount ubuntu.img rootfs
-cp /etc/group rootfs/etc/group
-cp /etc/resolv.conf rootfs/etc/
-cp /etc/apt/sources.list rootfs/etc/apt/
+sudo mount ubuntu.img rootfs
+sudo tar -xvf ${BASED_IMAGE_PKG} -C rootfs
+sudo cp /etc/group rootfs/etc/group
+sudo cp /etc/resolv.conf rootfs/etc/
+sudo cp /etc/apt/sources.list rootfs/etc/apt/
 
-mount -t proc /proc rootfs/proc  
-mount -t sysfs /sys rootfs/sys  
-mount --bind /dev rootfs/dev
+sudo mount -t proc /proc rootfs/proc  
+sudo mount -t sysfs /sys rootfs/sys  
+sudo mount --bind /dev rootfs/dev
 
 # enter chroot environment
-chroot rootfs
+sudo chroot rootfs
 
 apt update && apt install init initramfs-tools -y
 # setup language env
@@ -45,7 +68,7 @@ apt install -y iproute2 \
 # exit chroot environment
 exit
 
-umount rootfs/proc  
-umount rootfs/sys  
-umount rootfs/dev  
-umount rootfs
+sudo umount rootfs/proc  
+sudo umount rootfs/sys  
+sudo umount rootfs/dev  
+sudo umount rootfs
