@@ -5,6 +5,8 @@
 
 ### 2. build linux kernel
 
+2.1 source code build kernel
+
 ```bash
 git@github.com:torvalds/linux.git
 cd linux
@@ -16,6 +18,10 @@ vim .config
 
 make -j`nproc`
 ```
+
+2.2 offered kernel
+
+provided kernel is v6.8 with debug info in linux dir.
 
 ### 3. make rootfs
 
