@@ -9,7 +9,7 @@ mkfs.ext4 ubuntu.img
 mkdir rootfs
 
 # use chroot to install software for rootfs
-mount ubuntu-rootfs-raw-20G.image rootfs
+mount ubuntu.img rootfs
 cp /etc/group rootfs/etc/group
 cp /etc/resolv.conf rootfs/etc/
 cp /etc/apt/sources.list rootfs/etc/apt/
