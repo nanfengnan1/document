@@ -23,6 +23,10 @@ make -j`nproc`
 
 provided kernel is v6.8 with debug info in linux dir.
 
+```bash
+xz -d linux/vmlinux.xz
+```
+
 ### 3. make rootfs
 
 ```bash
@@ -69,7 +73,7 @@ qemu-system-x86_64
     -m 2G,maxmem=4G
 
 # kgdb connect
-gdb vmlinux  
+gdb linux/vmlinux  
 (gdb) set serial baud 115200
 (gdb) target remote /dev/ttyS0 
 ```
