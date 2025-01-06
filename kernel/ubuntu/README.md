@@ -1,7 +1,7 @@
 ### 1. development environment
 
-1. os: ubuntu 22.04
-2. qemu-system_x86_64: version 6.2.0
+1. os: ubuntu
+2. qemu-system_x86_64(>=6.2.0)
 
 ### 2. build linux kernel
 
