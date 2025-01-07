@@ -1,6 +1,10 @@
 ### 1. qemu communication introduction
 
     This is a tile and nothing to say.
+    ```bash
+    -netdev: define a backend device[in host]
+    -device: define a frontend device[in guest]
+    ```
 
 ### 1.1 bridge mode
 
@@ -53,3 +57,16 @@ qemu-system-x86_64 \
 ```    
 
 ### 1.4 socket mode
+
+```bash
+qemu-system-x86_64 \
+    -kernel linux/bzImage \
+    -hda rootfs.img \
+    -append "nokaslr root=/dev/sda" -nographic \
+    -smp 4 \
+    -m 2G \
+	-object memory-backend-file,id=mem,size=2G,mem-path=/mnt/huge_1GB,share=on \
+	-chardev socket,id=charnet0,path=/run/vpp/qemugdb.socket,server=on \
+	-netdev vhost-user,chardev=charnet0,id=hostnet0 \
+	-device virtio-net-pci,netdev=hostnet0,id=net0,mac=52:54:00:8c:30:b7,bus=pci.0,addr=0x9
+```
