@@ -75,5 +75,18 @@ qemu-system-x86_64
 # kgdb connect
 gdb linux/vmlinux  
 (gdb) set serial baud 115200
-(gdb) target remote /dev/ttyS0 
+(gdb) target remote /dev/ttyS0
+
+4.4 use host huge
+
+```bash
+qemu-system-x86_64 \
+    -kernel linux/bzImage \
+    -hda rootfs.img \
+    -append "nokaslr root=/dev/sda" -nographic \
+    -smp 4 \
+	-m 10G \
+	-object memory-backend-file,id=mem,size=10G,mem-path=/mnt/huge_1GB,share=on \
+    -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \
+    -device virtio-net-pci,netdev=net0,mac=52:54:00:12:34:56
 ```
