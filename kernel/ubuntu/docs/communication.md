@@ -22,7 +22,7 @@ sudo ip addr add 192.168.1.1/24 dev tap0
 
 guest side(vm):
 ```bash
-sudo ip addr add 192.168.1.2/24 dev ens3s
+sudo ip addr add 192.168.1.2/24 dev ens3
 sudo ip link set dev ens3 up
 
 # config host tap0 is default gateway
@@ -31,6 +31,7 @@ sudo ip route add default via 192.168.1.1 dev ens3
 
 qemu command:
 ```bash
+# common nograph boot
 qemu-system-x86_64 \
     -kernel linux/bzImage \
     -hda ubuntu.img \
@@ -39,6 +40,16 @@ qemu-system-x86_64 \
     -m 2G,maxmem=4G \
     -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \
     -device virtio-net-pci,netdev=net0,mac=52:54:00:12:34:56
+    
+# with kgdb boot    
+qemu-system-x86_64 \
+    -kernel linux/bzImage \
+    -hda ubuntu.img \
+    -append "nokaslr kgdboc=ttyS0,115200 kgdbwait root=/dev/sda" -nographic \
+    -smp 4 \
+    -m 2G,maxmem=4G \
+    -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \
+    -device virtio-net-pci,netdev=net0,mac=52:54:00:12:34:56    
 ```    
 
 ### 1.4 socket mode
