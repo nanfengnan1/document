@@ -39,6 +39,7 @@ xz -d linux/vmlinux.xz
 ```bash
 qemu-system-x86_64 \
     -kernel linux/bzImage \
+    -accel kvm \
     -hda ubuntu.img \
     -append "nokaslr root=/dev/sda" -nographic \
     -smp 4 \
@@ -49,6 +50,7 @@ qemu-system-x86_64 \
 
 ```
 qemu-system-x86_64 \
+    -accel kvm \
     -kernel linux/bzImage \
     -hda ubuntu.img \
     -append "nokaslr root=/dev/sda" -nographic -S -s \
@@ -66,6 +68,7 @@ Remote debugging using :1234
 kgdb boot and use serials to connect
 ```
 qemu-system-x86_64
+    -accel kvm \    
     -kernel linux/bzImage \
     -hda ubuntu.image \
     -append "nokaslr kgdboc=ttyS0,115200 kgdbwait root=/dev/sda" -nographic \
@@ -81,12 +84,14 @@ gdb linux/vmlinux
 
 ```bash
 qemu-system-x86_64 \
+    -accel kvm \
     -kernel linux/bzImage \
     -hda rootfs.img \
     -append "nokaslr root=/dev/sda" -nographic \
     -smp 4 \
-	-m 10G \
-	-object memory-backend-file,id=mem,size=10G,mem-path=/mnt/huge_1GB,share=on \
+	-m 1G \
+    -object memory-backend-file,id=mem,size=2G,mem-path=/dev/hugepages,share=on \
+    -numa node,memdev=mem \
     -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \
     -device virtio-net-pci,netdev=net0,mac=52:54:00:12:34:56
 ```

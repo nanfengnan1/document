@@ -37,6 +37,7 @@ qemu command:
 ```bash
 # common nograph boot
 qemu-system-x86_64 \
+    -accel kvm \
     -kernel linux/bzImage \
     -hda ubuntu.img \
     -append "nokaslr root=/dev/sda" -nographic \
@@ -47,6 +48,7 @@ qemu-system-x86_64 \
     
 # with kgdb boot    
 qemu-system-x86_64 \
+    -accel kvm \
     -kernel linux/bzImage \
     -hda ubuntu.img \
     -append "nokaslr kgdboc=ttyS0,115200 kgdbwait root=/dev/sda" -nographic \
@@ -58,14 +60,19 @@ qemu-system-x86_64 \
 
 ### 1.4 socket mode
 
+use socket backend communicates with vm by host hugepage
+
 ```bash
 qemu-system-x86_64 \
+	-name guest=kernel \
+	-accel kvm \
     -kernel linux/bzImage \
     -hda rootfs.img \
     -append "nokaslr root=/dev/sda" -nographic \
     -smp 4 \
     -m 2G \
-	-object memory-backend-file,id=mem,size=2G,mem-path=/mnt/huge_1GB,share=on \
+    -object memory-backend-file,id=mem,size=2G,mem-path=/dev/hugepages,share=on \
+    -numa node,memdev=mem \
 	-chardev socket,id=charnet0,path=/run/vpp/qemugdb.socket,server=on \
 	-netdev vhost-user,chardev=charnet0,id=hostnet0 \
 	-device virtio-net-pci,netdev=hostnet0,id=net0,mac=52:54:00:8c:30:b7,bus=pci.0,addr=0x9
