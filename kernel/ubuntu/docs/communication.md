@@ -40,7 +40,7 @@ qemu-system-x86_64 \
     -accel kvm \
     -kernel linux/bzImage \
     -hda ubuntu.img \
-    -append "nokaslr root=/dev/sda" -nographic \
+    -append "nokaslr root=/dev/sda rw" -nographic \
     -smp 4 \
     -m 2G,maxmem=4G \
     -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \
@@ -51,7 +51,7 @@ qemu-system-x86_64 \
     -accel kvm \
     -kernel linux/bzImage \
     -hda ubuntu.img \
-    -append "nokaslr kgdboc=ttyS0,115200 kgdbwait root=/dev/sda" -nographic \
+    -append "nokaslr kgdboc=ttyS0,115200 kgdbwait root=/dev/sda rw" -nographic \
     -smp 4 \
     -m 2G,maxmem=4G \
     -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \
@@ -68,7 +68,7 @@ qemu-system-x86_64 \
 	-accel kvm \
     -kernel linux/bzImage \
     -hda rootfs.img \
-    -append "nokaslr root=/dev/sda" -nographic \
+    -append "nokaslr root=/dev/sda rw" -nographic \
     -smp 4 \
     -m 2G \
     -object memory-backend-file,id=mem,size=2G,mem-path=/dev/hugepages,share=on \

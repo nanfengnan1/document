@@ -31,11 +31,12 @@ mkfs.ext4 ubuntu.img
 mkdir rootfs
 
 # use chroot to install software for rootfs
-sudo mount ubuntu.img rootfs
+mount -t ext4 -o loop,rw,exec rootfs.img rootfs
 sudo tar -xvf ${BASED_IMAGE_PKG} -C rootfs
 sudo cp /etc/group rootfs/etc/group
 sudo cp /etc/resolv.conf rootfs/etc/
 sudo cp /etc/apt/sources.list rootfs/etc/apt/
+sudo cp /etc/hosts rootfs/etc/hosts
 
 sudo mount -t proc /proc rootfs/proc  
 sudo mount -t sysfs /sys rootfs/sys  
