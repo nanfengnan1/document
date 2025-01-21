@@ -12,6 +12,9 @@
 
 ### 1.3 tun/tap mode
 
+tun/tap interface可以预先创建，这样虚拟机就是直接绑定，
+也可以不创建，虚拟机会自动创建一对tun/tap
+
 host side:
 ```bash
 sudo apt-get install bridge-utils
@@ -39,7 +42,7 @@ qemu command:
 qemu-system-x86_64 \
     -accel kvm \
     -kernel linux/bzImage \
-    -hda ubuntu.img \
+    -hda rootfs.img \
     -append "nokaslr root=/dev/sda rw" -nographic \
     -smp 4 \
     -m 2G,maxmem=4G \
@@ -50,7 +53,7 @@ qemu-system-x86_64 \
 qemu-system-x86_64 \
     -accel kvm \
     -kernel linux/bzImage \
-    -hda ubuntu.img \
+    -hda rootfs.img \
     -append "nokaslr kgdboc=ttyS0,115200 kgdbwait root=/dev/sda rw" -nographic \
     -smp 4 \
     -m 2G,maxmem=4G \
