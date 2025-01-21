@@ -20,6 +20,8 @@
     启动完虚拟机后，会产生一个tap0的tun/tap网口，把这网口绑定到ovs上，enp59s0f2np2这个是我的127 vlan的物理网口或者sriov网口
 
     ```bash
+    ip link set dev tap0 up
+    ip link set dev enp59s0f2np2 up
     ovs-vsctl add-br ovsbr0
     ovs-vsctl add-port ovsbr0 tap0
     ovs-vsctl add-port ovsbr0 enp59s0f2np2
