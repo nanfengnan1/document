@@ -58,14 +58,51 @@
             测试:
             ![vlanif](../../../image/ovs/vlanif_test.png)
 
-
-
 #### 2. vlan的access和trunk实验
 
-    报文进入指定端口添加vlan，然后转发到同vlan的接口上，报文出去时候要解掉vlan
+报文进入指定端口添加vlan，然后转发到同vlan的接口上，报文出去时候要解掉vlan，trunk接口可以放行多个vlan，access接口仅可以放行单个vlan
 
-    trunk接口可以放行多个vlan
-    access接口仅可以放行单个vlan
++ 实验拓扑
+
+    ![access_trunk](../../../image/ovs/access_trunk.png)
+
++ 实验配置
+
+    OpenvSwitch-1配置
+    ```bash
+    ovs-vsctl set port eth0 tag=10
+    ovs-vsctl set port eth1 tag=10
+    ovs-vsctl set port eth2 tag=20
+    ovs-vsctl set port eth3 tag=20
+
+    ovs-vsctl set port eth4 trunks=10,20
+    ```
+    OpenvSwitch-2配置
+    ```bash
+    ovs-vsctl set port eth0 tag=20
+    ovs-vsctl set port eth1 tag=10
+
+    ovs-vsctl set port eth4 trunks=10,20
+    ```
+
+    pc1和pc2配置
+    ```bash
+    ip 10.0.10.1/24
+    ip 10.0.10.2/24
+    ```
+
+    pc3和pc4配置
+    ```bash
+    ip 10.0.20.3/24
+    ip 10.0.20.4/24
+    ```
+
+    pc5和pc6配置
+    ```bash
+    ip 10.0.20.5/24
+    ip 10.0.10.6/24    
+    ```
+
 
 
 
