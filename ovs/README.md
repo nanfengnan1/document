@@ -277,14 +277,22 @@ Mininet是一个基于Linux Container架构的进程虚拟化网络仿真工具�
 # 可以再单独的容器里面安装和使用mininet
 ```
 
-#### 5. ovs实验
+#### 5. gns3虚拟环境搭建
+
+openvswitch.gns3a镜像在[openvswitch.gns3a](../simulator/gns3/img/openvswitch.gns3a)，你可以下载这个镜像然后导入到本地gns3上，即可获得openvswitch镜像设备进行试验
+
+安装gns3教程: [install gns3](https://docs.gns3.com/docs/getting-started/installation/linux)
+
+导入application教程参考: [import application](https://docs.gns3.com/docs/getting-started/setup-wizard-local-server)
+
+#### 6. ovs实验
 
 [Open vSwitch 入门实践 - lsgxeva - 博客园](https://www.cnblogs.com/lsgxeva/p/18050159)
 
 - 无隔离二层网络
 - 带vlan二层网络
 
-#### 5. ovs-dpdk架构
+#### 7. ovs-dpdk架构
 
 这个是重点，sriov+ovs-dpdk实现云组网
 
