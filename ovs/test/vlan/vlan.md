@@ -35,8 +35,8 @@
             # 1. ovs配置
 
             # 配置pc1连接的port的vlan 为10, 配置pc1连接的port的vlan 为20
-            ovs-vsctl add-port eth0 tag=10
-            ovs-vsctl add-port eth1 tag=20
+            ovs-vsctl set port eth0 tag=10
+            ovs-vsctl set port eth1 tag=20
 
             # 设置vlan 10的网关接口vlan10
             ovs-vsctl add-port br0 vlan10 tag=10 -- set Interface vlan10 type=internal
