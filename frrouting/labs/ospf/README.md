@@ -6,7 +6,14 @@
 
 all the interface will bind in openswitch, ovs-docker will manage them
 
-### 2. test lab details description
+### 2. envirment configure
+
+os: ubuntu24.04
+docker: quay.io/frrouting/frr:10.0.0
+frr: release 10.0.0
+ovs: apt install -y openswitch
+
+### 3. test lab details description
 
 1. lab1
 
