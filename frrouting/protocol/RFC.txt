@@ -1,3 +1,74 @@
 
 chinese docs:
     https://docs.huihoo.com/rfc/
+
+ospf mulitp-instances:
+RFC 4364: BGP/MPLS VPN
+RFC 4577: ospfV2-multip-instances for BGP/MPLS vpns
+RFC 5462: ospfV3-mulitp-instances for BGP/MPLS vpns
+
+OSPF 相关的 RFC 文档
+RFC 9013: OSPF Advertisement of Tunnel Encapsulations
+发布日期：2021-04
+状态：Proposed Standard
+描述：定义了 OSPF 中隧道封装的广告机制。
+RFC 8379: OSPF Graceful Link Shutdown
+发布日期：2018-05
+状态：Proposed Standard
+描述：介绍了 OSPF 中优雅地关闭链路的方法。
+RFC 8362: OSPFv3 Link State Advertisement (LSA) Extensibility
+发布日期：2018-04
+状态：Proposed Standard
+描述：扩展了 OSPFv3 的链路状态通告（LSA）功能。
+RFC 8099: OSPF Topology-Transparent Zone
+发布日期：2017-02
+状态：Experimental
+描述：定义了 OSPF 中的拓扑透明区域。
+RFC 7949: OSPFv3 over IPv4 for IPv6 Transition
+发布日期：2016-08
+状态：Proposed Standard
+描述：描述了在 IPv4 上运行 OSPFv3 以支持 IPv6 过渡。
+RFC 7884: OSPF Extensions to Advertise Seamless Bidirectional Forwarding Detection (S-BFD) Target Discriminators
+发布日期：2016-07
+状态：Proposed Standard
+描述：扩展了 OSPF 以支持无缝双向转发检测（S-BFD）目标标识符。
+RFC 7777: Advertising Node Administrative Tags in OSPF
+发布日期：2016-03
+状态：Proposed Standard
+描述：定义了在 OSPF 中广告节点管理标签的方法。
+RFC 7770: Extensions to OSPF for Advertising Optional Router Capabilities
+发布日期：2016-02
+状态：Proposed Standard
+描述：扩展了 OSPF 以支持广告可选路由器功能。
+RFC 7684: OSPFv2 Prefix/Link Attribute Advertisement
+发布日期：2015-11
+状态：Proposed Standard
+描述：定义了 OSPFv2 中前缀和链路属性的广告机制。
+RFC 7474: Security Extension for OSPFv2 When Using Manual Key Management
+发布日期：2015-04
+状态：Proposed Standard
+描述：为 OSPFv2 提供了安全扩展，当使用手动密钥管理时。
+RFC 7503: OSPFv3 Autoconfiguration
+发布日期：2015-04
+状态：Proposed Standard
+描述：定义了 OSPFv3 的自动配置机制。
+RFC 7471: OSPF Traffic Engineering (TE) Metric Extensions
+发布日期：2015-03
+状态：Proposed Standard
+描述：扩展了 OSPF 以支持流量工程（TE）度量。
+RFC 7166: Supporting Authentication Trailer for OSPFv3
+发布日期：2014-03
+状态：Proposed Standard
+描述：为 OSPFv3 提供了认证尾部支持。
+RFC 7137: Use of the OSPF-MANET Interface in Single-Hop Broadcast Networks
+发布日期：2014-02
+状态：Experimental
+描述：定义了在单跳广播网络中使用 OSPF-MANET 接口的方法。
+RFC 7038: Use of OSPF-MDR in Single-Hop Broadcast Networks
+发布日期：2013-10
+状态：Experimental
+描述：定义了在单跳广播网络中使用 OSPF-MDR 的方法。
+RFC 6987: OSPF Stub Router Advertisement
+发布日期：2013-09
+状态：Informational
+描述：定义了 OSPF 中的存根路由器广告机制。
