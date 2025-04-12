@@ -2,7 +2,7 @@
 chinese docs:
     https://docs.huihoo.com/rfc/
 
-1. OSPF RFC
+1. OSPFv2 RFC
 
 与OSPF相关的协议规范有：
 
@@ -57,3 +57,67 @@ chinese docs:
 ·     RFC 6860：Hiding Transit-Only Networks in OSPF
 
 ·     RFC 6987：OSPF Stub Router Advertisement
+
+2. BGP4 RFC
+
+与BGP相关的协议规范有：
+
+·     RFC 1700：ASSIGNED NUMBERS
+
+·     RFC 1997：BGP Communities Attribute
+
+·     RFC 2439：BGP Route Flap Damping
+
+·     RFC 2545：Use of BGP-4 Multiprotocol Extensions for IPv6 Inter-Domain Routing
+
+·     RFC 2918：Route Refresh Capability for BGP-4
+
+·     RFC 3107：Carrying Label Information in BGP-4
+
+·     RFC 4271：A Border Gateway Protocol 4 (BGP-4)
+
+·     RFC 4275：BGP-4 MIB Implementation Survey
+
+·     RFC 4277：Experience with the BGP-4 Protocol
+
+·     RFC 4360：BGP Extended Communities Attribute
+
+·     RFC 4364：BGP/MPLS IP Virtual Private Networks (VPNs)
+
+·     RFC 4382：MPLS/BGP Layer 3 Virtual Private Network (VPN) Management
+
+·     RFC 4451：BGP MULTI_EXIT_DISC (MED) Consideration
+
+·     RFC 4456：BGP Route Reflection: An Alternative to Full Mesh Internal BGP
+
+·     RFC 4486：Subcodes for BGP Cease Notification Message
+
+·     RFC 4659：BGP-MPLS IP Virtual Private Network (VPN) Extension for IPv6 VPN
+
+·     RFC 4684：Constrained Route Distribution for Border Gateway Protocol/MultiProtocol Label Switching (BGP/MPLS) Internet Protocol (IP) Virtual Private Networks (VPNs)
+
+·     RFC 4724：Graceful Restart Mechanism for BGP
+
+·     RFC 4760：Multiprotocol Extensions for BGP-4
+
+·     RFC 4781：Graceful Restart Mechanism for BGP with MPLS
+
+·     RFC 5004：Avoid BGP Best Path Transitions from One External to Another
+
+·     RFC 5065：Autonomous System Confederations for BGP
+
+·     RFC 5082：The Generalized TTL Security Mechanism (GTSM)
+
+·     RFC 5668：4-Octet AS Specific BGP Extended Community
+
+·     RFC 6037：Cisco Systems' Solution for Multicast in BGP MPLS IP VPNs
+
+·     RFC 6368：Internal BGP as the Provider/Customer Edge Protocol for BGP/MPLS IP
+
+·     RFC 6608：Subcodes for BGP Finite State Machine Error
+
+·     RFC 6793：BGP Support for Four-Octet Autonomous System (AS) Number Space
+
+·     RFC 7432：BGP MPLS-Based Ethernet VPN
+
+·     RFC 7752：North-Bound Distribution of Link-State and Traffic Engineering (TE) Information Using BGP
