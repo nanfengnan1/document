@@ -7,6 +7,13 @@ RFC 4364: BGP/MPLS VPN
 RFC 4577: ospfV2-multip-instances for BGP/MPLS vpns
 RFC 5462: ospfV3-mulitp-instances for BGP/MPLS vpns
 
+OSPF Specification -- ***
+RFC 1131(https://docs.huihoo.com/rfc/RFC1131.txt)
+RFC 1247
+
+OSPF 主要RFC -- ***
+RFC 2328
+
 OSPF 相关的 RFC 文档
 RFC 9013: OSPF Advertisement of Tunnel Encapsulations
 发布日期：2021-04
