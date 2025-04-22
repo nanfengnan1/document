@@ -14,6 +14,14 @@ chinese docs:
 
 ·     RFC 1403：BGP OSPF Interaction
 
+·     RFC 1583: OSPF Version 2 [the most of function have be replaced by RFC2328]
+      
+	RFC1583 与 RFC2328 的区别:
+          在 OSPF 路由选择过程中，RFC1583 和 RFC2328 的主要区别在于它们对路由开销（Cost）的处理方式。
+          RFC1583 更加注重最小开销，而 RFC2328 则会考虑路由的类型和区域类型。
+          例如，RFC2328 认为经过普通区域的路由优于经过骨干区域的路由，即使后者的开销更小.
+        default ospf router provides a options, named RFC1583Compatibility, is compatible with RFC1583
+
 ·     RFC 1745：BGP4/IDRP for IP---OSPF Interaction
 
 ·     RFC 1765：OSPF Database Overflow
