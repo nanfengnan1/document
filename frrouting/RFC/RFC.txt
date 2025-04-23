@@ -34,6 +34,8 @@ chinese docs:
 
 ·     RFC 3101：OSPF Not-So-Stubby Area (NSSA) Option
 
+·     RFC 3137：OSPF Stub Router Advertisement
+
 ·     RFC 3166：Request to Move RFC 1403 to Historic Status
 
 ·     RFC 3509：Alternative Implementations of OSPF Area Border Routers
