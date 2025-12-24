@@ -56,7 +56,7 @@ function check_sriov_envirment()
   fi
 
   # check grup configuration parameter
-  GRUP_SUPP_IOMMU=$(grep "iommu" /etc/grub2.cfg | sed -n 's/.*iommu=\([^ ]*\).*/\1/p')  
+  GRUP_SUPP_IOMMU=$(grep "iommu" /etc/grub2.cfg | sed -n 's/.*iommu=\([^ ]*\).*/\1/p')
   if [ ${#GRUP_SUPP_IOMMU} == 0 ]; then
     echo -e "\033[31mplease check grub support amd_iommu or intel_iommu \033[0m"
     exit -1
@@ -110,6 +110,69 @@ function check_sriov_envirment()
     echo -e "\033[36m[*]:linux envirment support sriov function \033[0m"
     reset
   fi
+}
+
+# pf cfg file /sys/class/net/pf-name
+# pf -> vf cfg file /sys/class/net/pf-name/device/
+# vf cfg file [out of vm attached] /sys/class/net/p2p4_2
+#           vf x /sys/class/net/p2p4/device/virtfnx/
+function display_pf_vf_pci_map()
+{
+  pf_name=$1
+
+  pf_vf_cfg="/sys/class/net/${pf_name}/device/virtfn*"
+
+  pf_pci=$(basename $(readlink /sys/class/net/${pf_name}/device))
+  pf_cfg_vfs=$(cat /sys/class/net/p2p4/device/sriov_numvfs)
+  pf_max_vfs=$(cat /sys/class/net/p2p4/device/sriov_totalvfs)
+  vf_pci_list=()
+  vf_mac_list=$()
+  vf_id_list=$(ls -d ${pf_vf_cfg} | awk -F'virtfn' '{print $2}')
+  vf_vm_list=()
+  vm_vf_list=$(virsh domiflist --domain centos7-w)
+
+  index=0
+  for vf_path in $(ls -d ${pf_vf_cfg}); do
+    vf_pci_list[index]=$(basename $(readlink $vf_path))
+    vf_mac_list[index]=$(ip link show ${pf_name} | grep "vf ${index}" | grep -oP '(?<=MAC )[0-9a-f:]+')
+    index=$(($index + 1))
+  done
+
+# [root@localhost ~]# virsh domiflist --domain centos7-w --inactive
+# Interface  Type       Source     Model       MAC
+# -------------------------------------------------------
+# -          direct     em1        virtio      52:54:00:ba:13:cb
+# -          hostdev    -          -           52:54:00:95:7d:6f
+
+  index=0
+  for vf_id in ${vf_id_list}; do
+    matched="false"
+    for vm in ${VIR_MACHINE_NAMES}; do
+      vm_if_mac_list=$(virsh domiflist --domain ${vm} | awk 'NR>2 && NF>0 {print $NF}')
+      for vm_if_mac in ${vm_if_mac_list}; do
+        if [ "${vf_mac_list[vf_id]}" == "${vm_if_mac}" ]; then
+          matched="true"
+          vf_vm_list[vf_id]=${vm}
+          break
+        fi
+      done
+      if [ ${matched} == "true" ]; then
+        break
+      fi
+    done
+
+    if [ ${matched} == "false" ]; then
+      vf_vm_list[vf_id]="none"
+    fi
+  done
+
+  # display pf-vf info
+  echo "interface ${pf_name} vf information[${pf_max_vfs}]:"
+  echo "vf-id    pf-pci        vf-pci        vf-mac        vm"
+  echo "-----------------------------------------------------"
+  for vf_id in ${vf_id_list}; do
+    echo "${vf_id}    ${pf_pci}    ${vf_pci_list[vf_id]}    ${vf_mac_list[vf_id]}    ${vf_vm_list[vf_id]}"
+  done
 }
 
 function display_support_sriov_nic()
@@ -296,7 +359,7 @@ function spoof_trust_enable_disable()
 function help_menu()
 {
   SCRIPT_NAME=$(basename "$0")
-  echo "usage: ${SCRIPT_NAME} [-avpshlg] [--pf_pcie] [--alloc_vfs] [--vf_pcie] [--virtual_machine]"
+  echo "usage: ${SCRIPT_NAME} [-avpshlg] [--pf_name] [--pf_pcie] [--alloc_vfs] [--vf_pcie] [--virtual_machine]"
   echo "       ${SCRIPT_NAME} [--pf_pcie=pf_pcie --alloc_vfs=alloc_n_vfs] [-g]"
 
   echo -e "\t -a,                    display all nic"
@@ -305,6 +368,7 @@ function help_menu()
   echo -e "\t -s, --sriov            display all support sriov physical nic"
   echo -e "\t -h, --help             display help menu"
   echo -e "\t -l, --list_pf_all_vfs  display all vfs from pointed pf"
+  echo -e "\t --pf_name              dispaly pf, vf mapping"
   echo -e "\t --enable               enable nic attribute"
   echo -e "\t --enable_out_sysconfig enable nic attribute"
 }
@@ -315,11 +379,12 @@ function main()
 {
   check_sriov_envirment
   # 1.使用getopt获取一个解析后的字符串
-  parse_options=$(getopt -o s::,h::,a::,l::,p::,v:: -l pf_pcie::,alloc_vfs::,vf_pcie::,virtual_machine::,sriov::,help::,list_pf_all_vfs::,enable::,enable_out_sysconfig::,vlan:: -- $@)
+  parse_options=$(getopt -o s::,h::,a::,l::,p::,v:: -l pf_name::,pf_pcie::,alloc_vfs::,vf_pcie::,virtual_machine::,sriov::,help::,list_pf_all_vfs::,enable::,enable_out_sysconfig::,vlan:: -- $@)
 
   # 2.将传递的参数设置成刚解析的字符串,--代表传递的参数,eval是为了防止有shell关键字和可选参数的的空格识别
   eval set -- $parse_options
 
+  pf_name=
   pf_pcie=
   alloc_n_vf=
   nf_pcie=
@@ -367,6 +432,19 @@ function main()
 	  help_menu
           shift 2
 	  ;;
+      --pf_name)
+          case $2 in
+            '')
+                echo "please input pf interface name"
+                exit -1
+                ;;
+            *)
+                pf_name=$2
+                display_pf_vf_pci_map $2
+                shift 2
+                ;;
+          esac
+          ;;
       --pf_pcie)
  	  case $2 in
             '')
