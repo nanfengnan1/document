@@ -128,8 +128,13 @@ function display_pf_vf_pci_map()
   vf_pci_list=()
   vf_mac_list=$()
   vf_id_list=$(ls -d ${pf_vf_cfg} | awk -F'virtfn' '{print $2}')
+  vf_spoof_list=($(ip link show p2p4 | grep -oP 'spoof checking \K[^,]+'))
+  vf_trust_list=($(ip link show ${pf_name} | grep -oP 'trust \K[^[:space:],]+'))
+  vf_vlan_list=()
   vf_vm_list=()
   vm_vf_list=$(virsh domiflist --domain centos7-w)
+
+  # ip link show p2p4 | grep -A2 -B2 "vf"
 
   index=0
   for vf_path in $(ls -d ${pf_vf_cfg}); do
@@ -167,11 +172,18 @@ function display_pf_vf_pci_map()
   done
 
   # display pf-vf info
-  echo "interface ${pf_name} vf information[${pf_max_vfs}]:"
-  echo "vf-id    pf-pci        vf-pci        vf-mac        vm"
-  echo "-----------------------------------------------------"
+  echo "interface ${pf_name}:[${pf_pci}] vf information[${pf_max_vfs}]:"
+  echo "  vf-id        mac        spoof     trust        pci        vm"
+  echo "  ------------------------------------------------------------"
   for vf_id in ${vf_id_list}; do
-    echo "${vf_id}    ${pf_pci}    ${vf_pci_list[vf_id]}    ${vf_mac_list[vf_id]}    ${vf_vm_list[vf_id]}"
+    printf "  %-6s %-18s %-8s %-8s %-12s %-12s\n" \
+      "$vf_id" \
+      "${vf_mac_list[$vf_id]:-N/A}" \
+      "${vf_spoof_list[$vf_id]:-N/A}" \
+      "${vf_trust_list[$vf_id]:-N/A}" \
+      "${vf_pci_list[$vf_id]:-N/A}" \
+      "${vf_vm_list[vf_id]:-N/A}"
+    # echo "${vf_id}    ${vf_mac_list[vf_id]}   ${vf_spoof_list[vf_id]}    ${vf_trust_list[vf_id]}    ${vf_pci_list[vf_id]}    ${vf_vm_list[vf_id]}"
   done
 }
 
