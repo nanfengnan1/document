@@ -343,6 +343,49 @@ BGP 防环不是靠单一属性，而是靠一套**“属性组合拳”**。这
 
 #### 7. FRR配置BGP的MED属性
 
+`具体实验镜像: ../../../simulator/gns3/projects/bgp4-med.tar.xz`
+
+![med拓扑](../../../image/frrouting/bgp/bgp的med实验图谱.png)
+
+```
+# R2配置
+router bgp 10
+ bgp router-id 2.2.2.2
+ bgp always-compare-med
+ no bgp ebgp-requires-policy
+ neighbor 2.1.1.2 remote-as 10
+ neighbor 4.1.1.2 remote-as 20
+
+ address-family ipv4 unicast
+  network 8.0.0.0/9
+  neighbor 4.1.1.2 route-map SET_MED_OUT out
+ exit-address-family
+exit
+
+route-map SET_MED_OUT permit 1
+ set metric 100
+exit
+
+# R3配置
+router bgp 10
+ bgp router-id 3.3.3.3
+ no bgp ebgp-requires-policy
+ neighbor 3.1.1.2 remote-as 10
+ neighbor 5.1.1.2 remote-as 20
+
+ address-family ipv4 unicast
+  neighbor 5.1.1.2 route-map SET_MED_OUT out
+ exit-address-family
+exit
+
+route-map SET_MED_OUT permit 1
+ set metric 200
+exit
+
+```
+
+![alt text](../../../image/frrouting/bgp/bgp的med的R4.png)
+
 #### 8. FRR配置BGP的Local_Pref属性
 
 - 为特定路由前缀设置  -- 推荐使用
