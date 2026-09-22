@@ -381,12 +381,15 @@ exit
 route-map SET_MED_OUT permit 1
  set metric 200
 exit
-
 ```
 
 ![alt text](../../../image/frrouting/bgp/bgp的med的R4.png)
 
 #### 8. FRR配置BGP的Local_Pref属性
+
+`具体实验镜像: ../../../simulator/gns3/projects/frr8.5_bgp_local_pref.tar.xz`
+
+![alt text](../../../image/frrouting/bgp/bgp的local-pref实验拓扑.png)
 
 - 为特定路由前缀设置  -- 推荐使用
 
