@@ -457,7 +457,70 @@ exit
   exit-address-family
   ```
 
-#### 9. FRR配置BGP的Nexthop属性
+#### 9. FRR配置BGP的重要配置参数
+
+  ![alt text](../../../image/frrouting/bgp/frr的bgp的参数.png)
+
+##### 9.1 ebgp-multihop：允许多跳 eBGP
+
+```
+  router bgp 20
+   neighbor 5.5.5.5 remote-as 10
+   neighbor 5.5.5.5 ebgp-multihop 2
+
+  允许与非直连邻居 5.5.5.5 建立 eBGP，发送 TTL 设置为 2。两端仍需有可用的往返路由；它不会自动创建路由。普通 iBGP 不需要此命令  
+```
+
+##### 9.2 update-source：指定 TCP 连接源地址
+
+```
+  router bgp 20
+   neighbor 2.2.2.2 remote-as 20
+   neighbor 2.2.2.2 update-source lo
+
+  使用本地 lo 接口上的地址作为连接源地址，也可以明确指定 IP：
+
+  neighbor 2.2.2.2 update-source 1.1.1.1
+
+  对端应将 1.1.1.1 配置为邻居。指定源地址不等于指定物理出接口，实际出口仍由路由决定。
+```
+
+##### 9.3 next-hop-self：将通告的下一跳改为本机
+
+```
+  router bgp 20
+   address-family ipv4 unicast
+    neighbor 2.2.2.2 next-hop-self
+   exit-address-family
+
+  在你的 R1 上，它让从 eBGP 学到的路由通告给 R2 时：
+
+  原 NEXT_HOP：5.1.1.2（R5）
+  新 NEXT_HOP：1.1.1.1（R1 的 iBGP 本地地址）
+
+  它不改变 TCP 源地址。若要对 iBGP 学来的路由也改写，FRR 8.5 使用：
+
+  neighbor 2.2.2.2 next-hop-self force
+
+  RR 上使用 force 会影响反射路由的下一跳，应按转发设计选择。
+```
+
+##### 9.4 bgp ebgp-requires-policy：要求 eBGP 收发策略
+
+```
+# 只有ebgp需要配置
+
+  router bgp 20
+   bgp ebgp-requires-policy
+
+  启用后：未配置入方向过滤就不接收路由；未配置出方向过滤就不发布路由。实验中可取消此要求：
+
+  router bgp 20
+   no bgp ebgp-requires-policy
+
+  只影响 eBGP，不影响 iBGP；取消要求也不会删除已有过滤规则。 FRR 8.5 的 traditional 配置默认启用，datacenter 默认关闭；修改开关后需要重置相关会话才能按新设
+  置工作。
+```
 
 #### 10. FRR配置BGP的ORIGINATOR_ID和CLUSTER_LIST属性
 
