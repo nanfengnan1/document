@@ -270,11 +270,19 @@ LOCAL_PREF属性用于判断流量离开AS时的最佳路由。当BGP的路由�
 
 - NO_EXPORT_SUBCONFED：具有此属性的路由被接收后，不能被发布到本地AS之外，也不能发布到联盟中的其他子AS。
 
-###### 3.2.7
+###### 3.2.7 ORIGINATOR_ID 和 CLUSTER_LIST 属性
+
+ORIGINATOR_ID 和 CLUSTER_LIST 这两个属性主要用于RR在ibgp内部的防环使用, 由于AS-PATH在ibgp内部不会添加AS
+
+ORIGINATOR_ID 和 CLUSTER_LIST 这两个参数都有RR内的RR发给这个RR管理的所有client, 同时RR负责填写这两个参数, CLUSTER_LIST追加自己的router-id, ORIGINATOR_ID 写入这个bgp路由的nexthop的地址
+
+防环级别对别:(ibgp内部防环)
+
+![alt text](../../../image/frrouting/bgp/bgp的rr防环属性对比.png)
+
+![alt text](../../../image/frrouting/bgp/bgp的rr属性.png)
 
 ###### 3.2.8
-
-###### 3.2.9
 
 #### 4. BGP解决IBGP全互联[Full Mesh]的方法
 
@@ -448,3 +456,45 @@ exit
     neighbor 2.1.1.2 route-map SET_LOCAL_PREF out
   exit-address-family
   ```
+
+#### 9. FRR配置BGP的Nexthop属性
+
+#### 10. FRR配置BGP的ORIGINATOR_ID和CLUSTER_LIST属性
+
+`具体实验镜像: ../../../simulator/gns3/projects/frr8.5_bgp_rr.tar.xz`
+
+![alt text](../../../image/frrouting/bgp/bgp的rr实验拓扑.png)
+
+说明:
+
+	ibgp内部一般用igp学习所有路由, 然后ibgp通过lo网口建立tcp连接；
+	普通直连 eBGP 通常使用互联接口 IP 建立 TCP 连接；
+	普通非直连 eBGP 通常使用 lo网口 建立 TCP 连接；
+
+```
+  拓扑说明:
+    拓扑描述IBGP内部通过OSPFV2协议来联通网络; IBGP之间使用lo建立TCP连接;
+  直连EBGP之间使用网络接口建立连接;
+
+router bgp 20
+ bgp router-id 2.2.2.2
+ neighbor 1.1.1.1 remote-as 20
+ neighbor 1.1.1.1 update-source lo
+ neighbor 3.3.3.3 remote-as 20
+ neighbor 3.3.3.3 update-source lo
+ neighbor 4.4.4.4 remote-as 20
+ neighbor 4.4.4.4 update-source lo
+ !
+ address-family ipv4 unicast
+
+  # 邻居1.1.1.1, 3.3.3.3, 4.4.4.4 是2.2.2.2的RR的客户端, 学习到bgp路由会反射给他们
+  neighbor 1.1.1.1 route-reflector-client
+  neighbor 3.3.3.3 route-reflector-client
+  neighbor 4.4.4.4 route-reflector-client
+ exit-address-family
+exit
+```
+
+报文格式:
+
+![alt text](../../../image/frrouting/bgp/bgp的rr抓包.png)
