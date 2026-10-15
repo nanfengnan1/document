@@ -109,7 +109,7 @@ Update消息用于在对等体之间交换路由信息。它既可以发布可�
 
 - **Path atributes**：与NLRI相关的所有路径属性列表，每个路径属性由一个TLV（Type-Length-Value）三元组构成。BGP正是根据这些属性值来避免环路，进行选路，协议扩展等。
 
-- **NLRI（Network Layer Reachability Information）**：可达路由的前缀和前缀长度二元组。1.2.4 Notification
+- **NLRI（Network Layer Reachability Information）**：可达路由的前缀和前缀长度二元组。
 
 ###### 2.2.4 Notification
 
