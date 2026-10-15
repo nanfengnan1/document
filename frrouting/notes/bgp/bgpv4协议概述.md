@@ -314,7 +314,7 @@ ORIGINATOR_ID 和 CLUSTER_LIST 这两个参数都有RR内的RR发给这个RR管�
 
   从 IBGP 对等体学到的路由，绝不再通告给其他 IBGP 对等体。
 
-- Confederatio的防环策略
+- Confederation的防环策略
 
   依靠 **AS_Path** 属性，在子 AS 间像 EBGP 一样工作，拒绝包含自身子 AS 号的路由
 
