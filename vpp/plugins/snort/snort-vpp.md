@@ -85,6 +85,26 @@ sudo cmake --install build
 sudo ldconfig
 
 /usr/local/bin/snort -V
+
+# snort 和 libdaq对应关系
+root@alexan-PowerEdge-R740:/opt/vpp# pkg-config --modversion libdaq
+3.0.27
+root@alexan-PowerEdge-R740:/opt/vpp# snort --version
+
+   ,,_     -*> Snort++ <*-
+  o"  )~   Version 3.12.2.0
+   ''''    By Martin Roesch & The Snort Team
+           http://snort.org/contact#team
+           Copyright (C) 2014-2026 Cisco and/or its affiliates. All rights reserved.
+           Copyright (C) 1998-2013 Sourcefire, Inc., et al.
+           Using DAQ version 3.0.27
+           Using Hyperscan version 5.4.2 2024-04-19
+           Using libpcap version 1.10.4 (with TPACKET_V3)
+           Using LuaJIT version 2.1.1703358377
+           Using LZMA version 5.4.5
+           Using OpenSSL 3.0.13 30 Jan 2024
+           Using PCRE2 version 10.42 2022-12-11
+           Using ZLIB version 1.3
 ```
 
 ### 3. 测试拓扑
