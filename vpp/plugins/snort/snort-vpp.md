@@ -180,7 +180,7 @@ ip netns exec snort-right ping -c 3 -W 1 10.10.1.2
 
 ### 5. 结果分析
 
-[snort-af-packet.pca](../../../pcap/vpp/plugins/snort/snort-af-packet.pcap)
+[snort-af-packet.pcap](../../../pcap/vpp/plugins/snort/snort-af-packet.pcap)
 
 #### 5.1 snort处理结果
 
