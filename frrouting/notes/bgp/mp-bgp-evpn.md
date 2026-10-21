@@ -68,19 +68,19 @@ EVPN基本概念示意图
 
 - ES (Ethernet Segment)
 
-如果CE多归到两个或更多PE，这组CE接入到不同PE的以太链路集合就是一个ES。如上图所示，CE1归属于PE1和PE2，CE1分别到PE1和PE2的这两条以太网链路就是一个ES。
+    如果CE多归到两个或更多PE，这组CE接入到不同PE的以太链路集合就是一个ES。如上图所示，CE1归属于PE1和PE2，CE1分别到PE1和PE2的这两条以太网链路就是一个ES。
 
 - ESI (Ethernet Segment Identifier)
 
-全局标识唯一一个ES的ID。如下图所示，不同PE连接相同CE设备的接口，需要有相同的ESI。当ESI的值为0时，表示PE连接的是个单归CE。
+    全局标识唯一一个ES的ID。如下图所示，不同PE连接相同CE设备的接口，需要有相同的ESI。当ESI的值为0时，表示PE连接的是个单归CE。
 
 - EVI（EVPN Instance）
 
-表示EVPN实例，EVPN是虚拟化私网，在一台PE设备上存在多个EVPN实例。类似于VPLS的VSI，用来标识一个VPN客户。
+    表示EVPN实例，EVPN是虚拟化私网，在一台PE设备上存在多个EVPN实例。类似于VPLS的VSI，用来标识一个VPN客户。
 
 - MAC-VRF
 
-用来存储EVPN实例通过BGP扩展协议学习到的MAC地址信息。每个EVI都有独立的MAC-VRF。
+    用来存储EVPN实例通过BGP扩展协议学习到的MAC地址信息。每个EVI都有独立的MAC-VRF。
 
 #### 3.2 EVPN的启动过程
 
