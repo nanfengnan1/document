@@ -77,46 +77,89 @@ EVPN是下一代全业务承载的VPN解决方案，它颠覆了传统二层VPN�
 | **Split Horizon** | 水平分割，防止从某个以太网段进入的流量又经其他 PE 返回同一段 |
 | **MAC Mobility** | MAC 迁移，通过序列号等信息更新主机所在位置 |
 
-#### 1.2 EVPN 使用的BGP或MPBGP的路由属性
+##### 1.1.6 BGP隧道封装属性的隧道类型
 
-**EVPN 的主要扩展是：定义 EVPN NLRI，以及一组 EVPN 专用扩展团体。它通过已有的 MP-BGP 路径属性来携带这些信息。**
+![alt text](../../../image/frrouting/bgp-evpn/bgp-tunnel-type.png)
+
+#### 1.2 EVPN 对BGP的拓展
+
+EVPN 的主要扩展是：定义 EVPN NLRI，以及一组 EVPN 专用扩展团体。它通过已有的 MP-BGP 路径属性来携带这些信息。
 
 要区分三个层级：**BGP 路径属性 → EVPN 路由类型 → 扩展团体类型**。
+
+##### 1.2.1 EVPN使用的BGP路径属性
+
+主要是BGP的update报文的Path attributes 新增一些属性来标识EVPN信息
 
 | BGP 路径属性 | Type Code | 在 EVPN 中的作用 | 属性分类 | 来源 |
 |---|---:|---|---|---|
 | **MP\_REACH\_NLRI** | **14** | 通告 EVPN 路由及下一跳 | 可选非过渡 | MP-BGP 定义 |
 | **MP\_UNREACH\_NLRI** | **15** | 撤销 EVPN 路由 | 可选非过渡 | MP-BGP 定义 |
 | **EXTENDED\_COMMUNITIES** | **16** | 携带 RT、封装类型、Router MAC、MAC Mobility 等 | 可选过渡 | 复用扩展团体属性 |
-| **PMSI\_TUNNEL** | **22** | 配合 Type 3，通告 BUM 流量的隧道信息、复制方式和标签/VNI | 可选过渡 | 复用 MVPN 定义的属性 |
+| **PMSI\_TUNNEL\_ATTRIBUTE** | **22** | 配合 Type 3，通告 BUM 流量的隧道信息、复制方式和标签/VNI | 可选过渡 | 复用 MVPN 定义的属性 |
 
 因此，**14、15、16、22 都是 EVPN 使用的路径属性，不能全部算作“EVPN 新增的属性编号”**&#12290;相关定义分别来自 [RFC 4760](<https://datatracker.ietf.org/doc/html/rfc4760>)、[RFC 4360](<https://www.rfc-editor.org/rfc/rfc4360.html>)和 [RFC 6514](<https://www.rfc-editor.org/rfc/rfc6514.html#section-5>)。
 
-#### 1.3 EVPN 专门定义了哪些扩展团体
+![alt text](../../../image/frrouting/bgp-evpn/evpn-path-attributes-packet.png)
 
-这些团体都放在 **EXTENDED\_COMMUNITIES（BGP 属性编号 16）** 内。下面列出基础 EVPN 及后续扩展中的常见项。
+###### 1.2.1.1 PMSI_TUNNEL_ATTRIBUTE属性
 
-表中的 Type/Sub-Type 是**扩展团体内部的编号，采用十六进制**
+**PMSI\_TUNNEL\_ATTRIBUTE 用来通告：某个 EVPN 广播域的 BUM 流量，应采用什么隧道方式、携带什么标签，以及发往哪个隧道端点。**
 
-| 扩展团体 | Type / Sub-Type | 作用 |
-|---|---|---|
-| **MAC Mobility** | `0x06 / 0x00` | 携带 MAC 迁移序列号和静态标记，帮助判断 MAC 的当前位置 |
-| **ESI Label** | `0x06 / 0x01` | 携带以太网段相关标签及 Single-Active 标记，支持多归属、防环 |
-| **ES-Import Route Target** | `0x06 / 0x02` | 控制同一以太网段相关 PE 导入 Type 4 路由 |
-| **EVPN Router’s MAC** | `0x06 / 0x03` | 通告远端 PE 的 Router MAC，供对称 IRB 使用 |
-| **Default Gateway** | `0x03 / 0x0d` | 标识通告的 MAC 是默认网关 MAC |
-| **DF Election** | `0x06 / 0x06` | 通告多归属场景中的 DF 选举算法及相关能力 |
+BUM 指广播、未知单播和组播。在你的 VXLAN 实验中，这个属性随 **EVPN Type 3 路由**一起发布，用于建立远端 VTEP 的泛洪复制列表。
 
-这些都是传递性扩展团体。其中 MAC Mobility、ESI Label、ES-Import、Default Gateway 在基础 EVPN 规范中定义；Router MAC、DF Election 来自后续扩展。[RFC 7432 §7.5–7.8](<https://www.rfc-editor.org/rfc/rfc7432.html#section-7.5>)、[RFC 9135 §8.1](<https://www.rfc-editor.org/rfc/rfc9135.html#section-8.1>)、[IANA EVPN 扩展团体注册表](<https://www.iana.org/assignments/bgp-extended-communities>)
+PMSI 全称为 **P-Multicast Service Interface**，属性通常简称 **PTA**。它是独立的 BGP 路径属性：
 
-EVPN 还复用了两类常见扩展团体：
+报文格式:
 
-- **普通 RT**：控制路由导入，例如 `RT:65000:10010`。
-- **Encapsulation**：表示封装类型，例如 `ET:8` 表示 VXLAN。[RFC 8365](<https://www.rfc-editor.org/rfc/rfc8365.html#section-5.1.3>)
+完整属性分为 BGP 属性头和 PMSI 属性值：
 
-#### 1.4 MP-BGP对EVPN的路由类型扩展
+```
+┌────────────────────────────────┐
+│ Attribute Flags       1 字节   │
+├────────────────────────────────┤
+│ Attribute Type Code   1 字节   │  22
+├────────────────────────────────┤
+│ Attribute Length    1/2 字节   │  属性值的长度
+├────────────────────────────────┤
+│ PMSI Flags            1 字节   │
+├────────────────────────────────┤
+│ Tunnel Type           1 字节   │
+├────────────────────────────────┤
+│ MPLS Label / VNI       3 字节   │
+├────────────────────────────────┤
+│ Tunnel Identifier     变长     │
+└────────────────────────────────┘
 
-EVPN 定义了自己的地址族和路由编码：
+BGP UPDATE
+└── Path Attributes
+    ├── MP_REACH_NLRI                  属性类型 14
+    │   ├── AFI：25，L2VPN
+    │   ├── SAFI：70，EVPN
+    │   ├── Next Hop：10.255.0.12
+    │   └── EVPN NLRI
+    │       ├── Route Type：3，IMET
+    │       ├── RD：10.255.0.12:10
+    │       ├── Ethernet Tag ID：0
+    │       └── Originating Router IP：10.255.0.12
+    │
+    ├── Extended Communities          属性类型 16
+    │   ├── RT：65000:10010
+    │   └── Encapsulation：VXLAN，值为 8
+    │
+    └── PMSI_TUNNEL_ATTRIBUTE         属性类型 22
+        ├── Flags：0
+        ├── Tunnel Type：6，Ingress Replication
+        ├── VNI：10010
+        └── Tunnel Identifier：10.255.0.12
+```
+
+`Tunnel Type` 决定 `Tunnel Identifier` 的格式。例如入口复制携带单播接收端点 IP；PIM 类隧道可以携带源地址、组播组地址等信息。[RFC 6514 §5](<https://www.rfc-editor.org/rfc/rfc6514.html#section-5>)
+
+
+##### 1.2.2 EVPN的路由类型
+
+主要是对MP-BGP的update报文的MP_[UN/]REACH_NLRI 进行了拓展，EVPN 定义了自己的地址族和路由编码：
 
 ```
 MP_REACH_NLRI / MP_UNREACH_NLRI
@@ -184,6 +227,32 @@ BGP EVPN路由有以下几种类型：
     ```
     用来以 IP 前缀的形式通告 BGP IPv4 单播路由 或 BGP IPv6 单播路由。
     ```
+
+![alt text](../../../image/frrouting/bgp-evpn/evpn-route-atributes-nlri-packet.png)
+
+##### 1.3 EVPN 定义的扩展团体类型
+
+这些团体都放在 **EXTENDED\_COMMUNITIES（BGP 属性编号 16）** 内。下面列出基础 EVPN 及后续扩展中的常见项。
+
+表中的 Type/Sub-Type 是**扩展团体内部的编号，采用十六进制**
+
+| 扩展团体 | Type / Sub-Type | 作用 |
+|---|---|---|
+| **MAC Mobility** | `0x06 / 0x00` | 携带 MAC 迁移序列号和静态标记，帮助判断 MAC 的当前位置 |
+| **ESI Label** | `0x06 / 0x01` | 携带以太网段相关标签及 Single-Active 标记，支持多归属、防环 |
+| **ES-Import Route Target** | `0x06 / 0x02` | 控制同一以太网段相关 PE 导入 Type 4 路由 |
+| **EVPN Router’s MAC** | `0x06 / 0x03` | 通告远端 PE 的 Router MAC，供对称 IRB 使用 |
+| **Default Gateway** | `0x03 / 0x0d` | 标识通告的 MAC 是默认网关 MAC |
+| **DF Election** | `0x06 / 0x06` | 通告多归属场景中的 DF 选举算法及相关能力 |
+
+这些都是传递性扩展团体。其中 MAC Mobility、ESI Label、ES-Import、Default Gateway 在基础 EVPN 规范中定义；Router MAC、DF Election 来自后续扩展。[RFC 7432 §7.5–7.8](<https://www.rfc-editor.org/rfc/rfc7432.html#section-7.5>)、[RFC 9135 §8.1](<https://www.rfc-editor.org/rfc/rfc9135.html#section-8.1>)、[IANA EVPN 扩展团体注册表](<https://www.iana.org/assignments/bgp-extended-communities>)
+
+EVPN 还复用了两类常见扩展团体：
+
+- **Route target**：控制路由导入，例如 `RT:65000:10010`。
+- **Encapsulation**：表示封装类型，例如 `ET:8` 表示 VXLAN。[RFC 8365](<https://www.rfc-editor.org/rfc/rfc8365.html#section-5.1.3>)
+
+![alt text](../../../image/frrouting/bgp-evpn/evpn-extend-communities-type-packet.png)
 
 ### 2. EVPN和传统L2VPN对比
 
@@ -296,8 +365,6 @@ EVPN网络拓扑图
 
     1. 控制面：传统L3VPN使用VPNv4路由传递路由信息，EVPN L3VPN使用MP-BGP扩展的5类路由传递路由信息。统一了二层和三层控制面，简化了部署和维护复杂度。  
     2. 数据面：传统L3VPN和EVPN L3VPN保持一致。
-
-### 5. EVPN的五种路由
 
 ### x. refer
 
