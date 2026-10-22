@@ -93,7 +93,7 @@ Leaf上租户控制的几种网络情况:
    经 Border Leaf / 出口网关，按设计对接防火墙、NAT、专线等
 
 5. Leaf 之间的底层网络
-   属于 Underlay，负责 VTEP 地址可达，通常由多个租户共
+   属于 Underlay，负责 VTEP 地址可达，通常由多个租户共享
 ```
 
 假设Leaf的网络配置如下：
