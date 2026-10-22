@@ -154,6 +154,8 @@ Spine：按外层目的 IP，转发到 Leaf2
 Leaf2：解封装，VNI 100 对应本地 VLAN 10 / BD
   ↓ 查 MAC，交付终端
 PC2：10.10.10.22
+
+跨 Leaf、同子网: 在leaf上查找bd10的mac表转发
 ```
 
 这里是二层互通，PC1 的业务报文不需要经过默认网关进行路由。
@@ -170,6 +172,8 @@ Spine：按外层目的 IP，转发到 Leaf2
 Leaf2：解封装，VNI 5000 对应 VRF-A
   ↓ 在 VRF-A 中查路由，经子网 B 的接口转发
 PC3：10.10.20.22
+
+跨 Leaf、不同子网: 在leaf上查找租户内的路由表转发
 ```
 
 **这段跨 Leaf 的隧道报文携带的是 L3VNI 5000，目的 Leaf 再将它转发到 VLAN 20；并不是在隧道里同时套上 L2VNI 100、L3VNI 5000、L2VNI 200 三层。**[NVIDIA 对称 IRB 转发流程](<https://developer.nvidia.com/blog/using-vxlan-routing-with-evpn-through-asymmetric-or-symmetric-models/>)
