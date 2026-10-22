@@ -156,6 +156,9 @@ Leaf2：解封装，VNI 100 对应本地 VLAN 10 / BD
 PC2：10.10.10.22
 
 跨 Leaf、同子网: 在leaf上查找bd10的mac表转发
+
+同网段：
+br10 → 查dst mac → vx100 → Underlay → 远端
 ```
 
 这里是二层互通，PC1 的业务报文不需要经过默认网关进行路由。
@@ -174,6 +177,9 @@ Leaf2：解封装，VNI 5000 对应 VRF-A
 PC3：10.10.20.22
 
 跨 Leaf、不同子网: 在leaf上查找租户内的路由表转发
+
+跨网段：
+br10 → TENANT-A 查路由 → br5000 → vx5000 → Underlay → 远端
 ```
 
 **这段跨 Leaf 的隧道报文携带的是 L3VNI 5000，目的 Leaf 再将它转发到 VLAN 20；并不是在隧道里同时套上 L2VNI 100、L3VNI 5000、L2VNI 200 三层。**[NVIDIA 对称 IRB 转发流程](<https://developer.nvidia.com/blog/using-vxlan-routing-with-evpn-through-asymmetric-or-symmetric-models/>)
