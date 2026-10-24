@@ -1,4 +1,52 @@
-### 1. vxlan-evpn组网
+### 1. evpn术语
+
+| 分类 | 术语 | 全称 / 中文 | 作用及理解 |
+|---|---|---|---|
+| 基础 | **EVPN** | Ethernet VPN，以太网虚拟专用网络 | 使用 BGP 传递 MAC、MAC/IP、IP 前缀等可达性信息，承担**控制平面**的工作。[协议说明](<https://www.rfc-editor.org/rfc/rfc8365.html>) |
+| 基础 | **VXLAN** | Virtual eXtensible LAN | 将原始以太网帧封装到 UDP/IP 中，跨三层网络传输，承担**数据平面**的工作。[封装定义](<https://www.rfc-editor.org/rfc/rfc7348.html>) |
+| 基础 | **Underlay** | 底层承载网络 | 负责让各个 VTEP IP 互相可达；你通过 OSPF 建立的 Leaf—Spine 三层网络属于这一层。 |
+| 基础 | **Overlay** | 叠加网络 | 建立在 Underlay 上的租户逻辑网络，包括租户二层互通、跨子网路由。 |
+| 基础 | **Leaf / Spine** | 接入节点 / 骨干节点 | Leaf 通常连接主机并承担 VTEP、网关功能；Spine 通常负责底层 IP 转发，也可以兼任 RR。 |
+| 基础 | **VTEP** | VXLAN Tunnel Endpoint，隧道端点 | 执行 VXLAN 封装、解封装。你前面配置的 `10.255.0.11`、`10.255.0.12` 是 VTEP IP。 |
+| 基础 | **RR** | Route Reflector，路由反射器 | 向其他 BGP 邻居反射路由，减少 iBGP 全互联需求。RR 本身不必承担租户 VXLAN 解封装。 |
+| 租户与隔离 | **Tenant** | 租户 | 一组需要逻辑隔离的网络资源，例如某个客户或业务系统；可以包含多个子网、二层网络和路由实例。 |
+| 租户与隔离 | **VRF / IP-VRF** | Virtual Routing and Forwarding | 独立的三层路由与转发上下文，例如 `TENANT-A`。不同 VRF 可以使用重叠 IP 地址。 |
+| 租户与隔离 | **MAC-VRF** | MAC 转发实例 | EVPN 的二层转发上下文，承载 MAC 转发表；与三层 IP-VRF 相对应。 |
+| 租户与隔离 | **BD** | Bridge Domain，桥接域 | 一个逻辑二层广播域，域内按 MAC 地址进行转发。 |
+| 租户与隔离 | **VLAN** | Virtual LAN | 本地二层网络的划分方式。**VLAN ID 与 VNI 是不同编号**，通过配置建立映射。 |
+| 租户与隔离 | **VNI** | VXLAN Network Identifier | VXLAN 头中的 **24 位网络标识**，接收端据此选择相应转发上下文。[报文格式](<https://www.rfc-editor.org/rfc/rfc7348.html#section-5>) |
+| 租户与隔离 | **L2VNI** | 二层 VNI | 标识 VXLAN 二层网络，例如 `10010`；用于跨 VTEP 的二层桥接。 |
+| 租户与隔离 | **L3VNI** | 三层 VNI | 在对称 IRB 中标识租户 IP-VRF，例如 `50000`。**与 L2VNI 使用相同的 VXLAN 头格式**，区别在于映射的转发上下文。[FRR 说明](<https://docs.frrouting.org/en/stable-10.0/evpn.html>) |
+| 租户与隔离 | **SVI** | Switch Virtual Interface | 连接二层广播域与三层路由功能的逻辑接口；用户 VLAN 的 SVI 通常承担主机网关功能。 |
+| 租户与隔离 | **L3-SVI** | 与 L3VNI 关联的 SVI | 在一些实现中连接 L3VNI 对应桥接域和租户 VRF，常用于提供路由 MAC，并可不配置 IP；具体形式取决于实现。[FRR 示例](<https://docs.frrouting.org/en/stable-10.0/evpn.html>) |
+| 租户与隔离 | **EVI** | EVPN Instance，EVPN 实例 | EVPN 服务实例。在 VLAN-based 模式下通常对应一个广播域；其他服务模式可以包含多个广播域。[服务模型](<https://www.rfc-editor.org/rfc/rfc7432.html#section-6>) |
+| 路由标识 | **RD** | Route Distinguisher，路由区分符 | 区分不同实例发布的相同地址，使 VPN 路由可被分别表示。例如 `10.255.0.11:10`。 |
+| 路由标识 | **RT** | Route Target，路由目标 | 控制路由的导出、导入关系，例如 `65000:10010`。**RD 负责区分，RT 参与决定哪些实例导入路由。**[RD/RT 定义](<https://www.rfc-editor.org/rfc/rfc7432.html#section-7.9>) |
+| 路由标识 | **NLRI** | Network Layer Reachability Information | BGP 中表达“哪些目的地址可达”的信息。EVPN NLRI 根据路由类型携带不同字段。 |
+| 路由标识 | **Ethernet Tag ID** | 以太网标签标识 | EVPN NLRI 中的字段；含义取决于服务模式。在你使用的 VLAN-based 场景中通常为 `0`，不直接等于 VNI。 |
+| 路由标识 | **ET:8** | Encapsulation Type = 8 | FRR 输出中的封装类型，表示 **VXLAN**。与 Ethernet Tag ID 是两个概念。[IANA 编号](<https://www.iana.org/assignments/bgp-tunnel-encapsulation>) |
+| EVPN 路由 | **Type-1 / EAD** | Ethernet Auto-Discovery Route | 主要用于多归属场景，支持以太网段相关发现、快速收敛和多路径处理。 |
+| EVPN 路由 | **Type-2** | MAC/IP Advertisement Route | 通告 **MAC 或 MAC+IP** 的可达性；你讨论的主机 MAC/IP 通告、撤销主要涉及它。 |
+| EVPN 路由 | **Type-3 / IMET** | Inclusive Multicast Ethernet Tag Route | 发现参加某个二层 EVPN 网络的远端节点，支持建立 BUM 流量分发关系。**看到 Type-3 不代表已经学到主机 MAC。** |
+| EVPN 路由 | **Type-4 / ES Route** | Ethernet Segment Route | 发现连接同一以太网段的其他设备，为 DF 选举等多归属机制提供信息。[Type-1～4 定义](<https://www.rfc-editor.org/rfc/rfc7432.html#section-7>) |
+| EVPN 路由 | **Type-5** | IP Prefix Route | 通告 IP 前缀，例如某个 `/24` 网段、默认路由，也可以通告主机前缀。[Type-5 定义](<https://www.rfc-editor.org/rfc/rfc9136.html>) |
+| 三层转发 | **IRB** | Integrated Routing and Bridging | 综合路由与桥接：同子网进行二层转发，不同子网进行三层路由。 |
+| 三层转发 | **Symmetric IRB** | 对称 IRB | 跨子网跨 Leaf 通信时，入口、出口 Leaf 都进行路由处理；VXLAN 场景通常通过 **L3VNI** 连接两端租户 VRF。 |
+| 三层转发 | **Asymmetric IRB** | 非对称 IRB | 入口 Leaf 完成路由，再通过**目的子网的 L2VNI** 发往出口 Leaf；出口执行二层桥接。 |
+| 三层转发 | **Anycast Gateway** | 任播网关 | 多台 Leaf 为同一子网提供相同网关 IP，常配合相同网关 MAC，让主机就近使用网关。 |
+| 三层转发 | **RMAC** | Router MAC，路由器 MAC | 用于路由转发的 MAC。对称 IRB 中，跨 VTEP 路由报文的内层目的 MAC 通常指向远端路由器 MAC。[IRB 转发说明](<https://www.rfc-editor.org/rfc/rfc9135.html>) |
+| 转发表 | **FDB** | Forwarding Database，MAC 转发表 | 记录广播域内 **MAC → 本地端口或远端隧道目的地** 的转发关系。 |
+| 转发表 | **ARP / ND 表** | IPv4 ARP / IPv6 邻居表 | 保存相应接口、VRF 下的 **IP → MAC** 等邻居信息；与 FDB 是不同的表。[邻居表定义](<https://man7.org/linux/man-pages/man8/ip-neighbour.8.html>) |
+| 泛洪与发现 | **BUM** | Broadcast、Unknown Unicast、Multicast | 广播、未知单播、组播的统称。未知单播表示当前没有匹配的目的 MAC 转发表项。 |
+| 泛洪与发现 | **Ingress Replication / HER** | 入口复制 / 头端复制 | 入口 VTEP 把需要泛洪的帧复制多份，分别通过单播隧道发给远端 VTEP。[VXLAN-EVPN 机制](<https://www.rfc-editor.org/rfc/rfc8365.html>) |
+| 泛洪与发现 | **ARP/ND Suppression** | ARP/ND 抑制 | 利用已知 IP-MAC 映射在本地代理应答，减少跨隧道泛洪。**代理应答本身不等于主动探测主机存活。**[FRR 说明](<https://docs.frrouting.org/en/stable-10.0/evpn.html>) |
+| 表项维护 | **MAC Aging** | MAC 老化 | 普通动态 MAC 长时间没有得到源 MAC 学习刷新后，被删除。Linux FDB 老化与 ARP 邻居状态变化是两套机制。[Linux 桥接说明](<https://docs.kernel.org/6.8/networking/bridge.html>) |
+| 表项维护 | **Route Withdrawal** | 路由撤销 | BGP 宣告之前发布的路由不再有效。某个主机的 Type-2 撤销，只涉及相应路由，不代表整个租户被删除。 |
+| 表项维护 | **Silent Host** | 静默主机 | 长时间不主动发送报文的主机；可能仍然在线，但依赖流量刷新的表项可能老化。 |
+| 表项维护 | **ARP/ND Probe** | ARP/ND 探测 | 主动查询已知 IP 的邻居，利用回复重新确认或刷新信息。触发时机取决于实现，不能默认都是老化前探测。[静默主机处理](<https://www.rfc-editor.org/rfc/rfc9135.html#section-7.3>) |
+| 多归属 | **ES / ESI** | Ethernet Segment / Ethernet Segment Identifier | ES 是接入一个或多个 EVPN 节点的以太网段；ESI 是其标识，多归属节点借此识别共同连接关系。 |
+| 多归属 | **DF** | Designated Forwarder，指定转发者 | 在多归属场景中控制特定流量向接入网段的转发，避免重复送达；全活模式下并不意味着所有单播只能经过 DF。 |
+| 主机迁移 | **MAC Mobility** | MAC 移动机制 | 主机 MAC 在不同接入位置之间迁移时，通过序列号等机制判断较新的位置并更新转发。[多归属与移动机制](<https://www.rfc-editor.org/rfc/rfc7432.html>) |
 
 ### 2. evpn报文流程
 
@@ -21,6 +69,14 @@
 
 这两种模型的核心区别是：**一个 EVPN 实例（EVI）包含一个 BD，还是包含多个 BD。** BD 是二层广播域，MAC-VRF 是设备上承载该 EVPN 二层业务的转发实例。[RFC 7432](<https://www.rfc-editor.org/rfc/rfc7432.html#section-6>)
 
+```
+VNI-BD 是 1:1的绑定的
+EVI-BD 是 1:m的 (m >= 1)绑定的
+所以 EVI-VNI 也是1:m的 (m >= 1)
+
+所以多接入BD时候, leaf需要知道哪个BD应该学习这个MAC-IP，报文引入Ethernet-tag来唯一标识每个BD
+```
+
 **VLAN-Based Service Interface 的组织方式是：一个 EVI 只承载一个 BD**
 
 **VLAN-Aware Bundle Service Interface 的组织方式是：一个 EVI 可以承载多个 BD，但每个 BD 仍有自己的桥接表。**
@@ -37,8 +93,6 @@
 | **桥接表／MAC 表** | 记录该 BD 内“目的 MAC 应该从哪个端口或远端 VTEP 转发” |
 | **L2VNI** | VXLAN 数据报文中用于标识二层网络的编号 |
 | **Ethernet Tag ID** | EVPN 路由中的字段，用于在需要时标识 EVI 内的具体 BD |
-
-VXLAN的VNI是和BD/Bridge是一一绑定的。
 
 #### 3.1 VLAN-Based Service Interface
 
